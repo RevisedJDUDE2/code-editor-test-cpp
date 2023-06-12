@@ -1,82 +1,57 @@
 #include <iostream>
-#include <map>
+#include <vector>
+#include <unistd.h>
 #include <fstream>
-#include <windows.h>
+#include <string>
+#define SUB_VER "PRE-RELEASE -- 2.1"
 
-std::string fileExtens;
+int counter = 2;
 
-int canExit = 0;
+void af(std::vector<std::string> cont);
 
-int exitCallBack(std::map<int, std::string> a) {
-	for (int f = 0; f < a.size(); f++) {
-		//FOR DEBUG PROCCESSESS
-		std::cout << a[f] << "\n";
-	};
-	canExit = 1;
-	return 1;
-};
-
-class editor {
+class Editor {
 	private:
-		int VERSION = 0.1;
+
 	public:
-		enum EDITOR_EXIT_CODE {
-			EDITOR_EXIT_CODE_COLON_Q = 1,
-			EDITOR_EXIT_CODE_COLON_WQ = 2,
-			EDITOR_EXIT_CODE_COLON_QUIT = 3
-		};
-		void setEditorExitCode(EDITOR_EXIT_CODE A, std::map<int, std::string> d, std::string inp) {
-			switch (A) {
-				case 1:
-					if (inp == ":q" || inp == ":Q")
-					exitCallBack(d);
-					break;
-				case 2:
-					if (inp == ":wq" || inp == ":WQ")
-					exitCallBack(d);
-					break;
-				case 3:
-					if (inp == ":QUIT" || inp == ":quit")
-					exitCallBack(d);
-					break;
-				default:
-					std::cout << "ERROR\n";
-					break;
-			}
+	void setCallBack(std::vector<std::string> a ,void(*Function)(std::vector<std::string> b)) {
+		Function(a);
+	}
+	void makeFile(std::string name, std::vector<std::string> Contents) {
+		std::ofstream file(name);
+		for (int lines = 0; lines < Contents.size(); lines++) {
+			file << Contents[lines];
 		}
-		void setFileContent(std::map<int, std::string> osf) {
-			std::ofstream afile(fileExtens);
-			for (int as = 0; as < osf.size(); as++) {
-				afile << osf[as];
-			}
-			Sleep(500);
-			std::ifstream arfile(fileExtens);
-			std::string CONTENTS;
-			while(std::getline(arfile, CONTENTS)) {
-				afile << CONTENTS;
-			};
-			afile.close();
-			arfile.close();
-		};
+		sleep(1);
+		file.close();
+	}
 };
 
-int main() {
-	std::map<int,std::string> LINES;
-	std::cout << "EDITOR\n";
-	std::cout << "FILE NAME (Including Extension  ex...(.txt) ): \n";
-	std::cin >> fileExtens;
-	for (int cline = 0;;cline++) {
-		std::string input;
-		std::getline(std::cin, input);
-		editor al;
-		al.setEditorExitCode(al.EDITOR_EXIT_CODE_COLON_Q, LINES, input);
-		al.setFileContent(LINES);
-		if (canExit == 1) {
-			goto EXT;
-		};
-		LINES.insert({cline, input});
-		input.assign("\n");
+void af(std::vector<std::string> cont) {
+    counter--;
+    std::string STATUSCODE = (counter == 0) ? "You Can Now Exit" : "$ Left To Exit!";
+	std::cout << counter << STATUSCODE << "\n";
+    if (counter == 0) {
+        system("title SAVED DOCUMENT!");
+    }
+}
+
+int main(int argc, char *argv[]) {
+    system("title BAsic Code Editor (BACE) && cls");
+	std::vector<std::string> LINES;
+	std::cout << "Editor " << SUB_VER << counter+".A" <<"\n";
+	std::cout << "To Exit: $ and hit enter\n";
+
+	for (int loop = 0;;loop++) {
+		std::string inputs;
+		std::getline(std::cin, inputs, '$');
+		Editor Obj;
+		Obj.setCallBack(LINES, af);
+        std::string filename_getargv = (argv[1] == "" || argv[1] == NULL) ? "SAMPLE.txt" : argv[1];
+		Obj.makeFile(filename_getargv, LINES);
+		LINES.push_back(inputs);
+		inputs.assign("");
+        sleep(1);
 	};
-	EXT:
+    sleep(10);
 	return 0;
 }
